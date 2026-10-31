@@ -1,7 +1,7 @@
 <div align="center">
 
 <pre>
-          ( x . x )
+( x . x )
 [---------- body ----------]
 </pre>
 
