@@ -7,23 +7,24 @@
 
 **save · decompile · export**
 
-A small loader that connects Body Decompiler with UniversalSynSaveInstance.
+A small, single-file loader for UniversalSynSaveInstance and native executor decompilation.
 
 </div>
 
 ## What it does
 
-`body` saves the instance tree visible to the client and uses the local Body Decompiler bridge to restore source code for accessible scripts.
+`body` saves the instance tree visible to the client and uses the executor's native `decompile` function to restore source code for accessible scripts.
 
 - saves GUI, models, parts, folders and other replicated instances;
 - handles `ModuleScript`, `LocalScript` and client-visible `Script` objects;
 - exports places as `.rbxlx` and models as `.rbxmx`;
-- falls back to the executor's native `decompile` function if the local bridge is unavailable;
+- works as one Luau file without a localhost bridge or platform-specific executable;
+- supports Windows and macOS when the executor provides the required APIs;
 - exposes the familiar `synsaveinstance(options)` entry point.
 
 ## Quick start
 
-Start the local Body Decompiler bridge, then run:
+Run:
 
 ```luau
 local synsaveinstance = loadstring(game:HttpGet(
@@ -31,7 +32,8 @@ local synsaveinstance = loadstring(game:HttpGet(
 ))()
 
 synsaveinstance({
-    FilePath = "SavedPlace.rbxlx",
+    FilePath = "SavedPlace.rbxl",
+    Binary = true,
     Decompile = true,
     SaveBytecode = true,
     mode = "full",
@@ -46,7 +48,8 @@ Save everything available to the client:
 
 ```luau
 synsaveinstance({
-    FilePath = "SavedPlace.rbxlx",
+    FilePath = "SavedPlace.rbxl",
+    Binary = true,
     mode = "full",
     Decompile = true,
 })
@@ -57,7 +60,8 @@ Save one GUI as a model:
 ```luau
 synsaveinstance({
     Object = game.Players.LocalPlayer.PlayerGui.YourGui,
-    FilePath = "YourGui.rbxmx",
+    FilePath = "YourGui.rbxm",
+    Binary = true,
     IsModel = true,
     Decompile = true,
 })
@@ -65,10 +69,12 @@ synsaveinstance({
 
 ## Requirements
 
-- an executor HTTP request API;
-- `getscriptbytecode` for bridge decompilation;
-- `loadstring` and the file APIs required by UniversalSynSaveInstance;
-- the local Body Decompiler bridge listening on `127.0.0.1:28191`.
+- `loadstring` and `game:HttpGet`;
+- the executor's native `decompile(instance)` function for script recovery;
+- `getscriptbytecode` when `SaveBytecode = true` is used;
+- the file APIs required by UniversalSynSaveInstance.
+
+If the executor does not provide `decompile`, instances and GUI can still be saved, but script source cannot be reconstructed by this loader.
 
 ## Client visibility
 
